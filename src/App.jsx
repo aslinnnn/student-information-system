@@ -14,6 +14,28 @@ function App() {
   })
   const [students, setStudents] = useState([])
   const handleSaveStudent = () => {
+    if (
+  !student.studentId ||
+  !student.fullName ||
+  !student.age ||
+  !student.gender ||
+  !student.course ||
+  !student.yearLevel ||
+  !student.email
+) {
+  alert('Please fill in all fields!')
+  return
+}
+    const existingStudent = students.find(
+  (item) => item.studentId === student.studentId
+  )
+
+
+
+  if (existingStudent) {
+  alert('Student ID already exists!')
+  return
+  }
   const updatedStudents = [...students, student]
 
   setStudents(updatedStudents)
