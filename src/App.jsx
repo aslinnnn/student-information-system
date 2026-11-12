@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import './App.css'  
 function App() {
   const [currentPage, setCurrentPage] = useState('Dashboard')
-  
+  const [searchTerm, setSearchTerm] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
   const [student, setStudent] = useState({
   studentId: '',
   fullName: '',
@@ -36,18 +37,27 @@ function App() {
     alert('Please fill in all fields!')
     return
   }
-    const existingStudent = students.find(
-   (item) => item.studentId === student.studentId
-  )
+const existingStudent = students.find(
+  (item) => item.studentId === student.studentId
+)
 
-  if (existingStudent) {
+if (existingStudent && !isEditing) {
   alert('Student ID already exists!')
   return
-  }
-  const updatedStudents = [...students, student]
+}
 
-  setStudents(updatedStudents)
+  let updatedStudents
 
+ if (isEditing) {
+  updatedStudents = students.map((item) =>
+    item.studentId === student.studentId ? student : item
+  )
+ } else {
+  updatedStudents = [...students, student]
+ }
+
+ setStudents(updatedStudents)
+ setIsEditing(false)
   setStudent({
   studentId: '',
   fullName: '',
@@ -58,9 +68,15 @@ function App() {
   email: ''
   })
   console.log(updatedStudents)
+
+ }
+   
+const handleEditStudent = (student) => {
+  setStudent(student)
+  setIsEditing(true)
+  setCurrentPage('Add Student')
  }
 
- 
 const handleDeleteStudent = (studentId) => {
   setStudentToDelete(studentId)
   setShowDeleteModal(true)
@@ -125,22 +141,22 @@ const confirmDeleteStudent = () => {
 
   <div className="stat-card">
     <h3>Total Students</h3>
-    <h1>120</h1>
+    <h1>{students.length}</h1>
   </div>
 
   <div className="stat-card">
     <h3>Male Students</h3>
-    <h1>65</h1>
+    <h1>{students.filter((s) => s.gender === 'Male').length}</h1>
   </div>
 
   <div className="stat-card">
     <h3>Female Students</h3>
-    <h1>55</h1>
+    <h1>{students.filter((s) => s.gender === 'Female').length}</h1>
   </div>
 
   <div className="stat-card">
     <h3>Enrolled Students</h3>
-    <h1>110</h1>
+    <h1>{students.length}</h1>
   </div>
 
  </div>
@@ -152,6 +168,12 @@ const confirmDeleteStudent = () => {
   <>
     <h2>Students</h2>
     <p>List of registered students.</p>
+    <input
+      type="text"
+      placeholder="Search by Student ID, Name, or Course..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+    />
 
     {students.length === 0 ? (
       <p>No students registered yet.</p>
@@ -181,9 +203,11 @@ const confirmDeleteStudent = () => {
               <td>{item.yearLevel}</td>
               <td>{item.email}</td>
               <td>
+              <button onClick={() => handleEditStudent(item)}>
+                Edit
+              </button>
               <button
-                onClick={() => handleDeleteStudent(item.studentId)}
-              >
+                onClick={() => handleDeleteStudent(item.studentId)}>
                  Delete
               </button>
              </td>
@@ -283,9 +307,10 @@ const confirmDeleteStudent = () => {
       />
    </div>
 
-   <button type="button" className="save-button" 
-      onClick={handleSaveStudent}>
-      Save Student
+   <button onClick={handleSaveStudent}>
+     {isEditing ? 'Update Student' : 'Save Student'
+     
+     }
    </button>
 
 </div>
