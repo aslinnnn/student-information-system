@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'  
 function App() {
   const [currentPage, setCurrentPage] = useState('Dashboard')
@@ -8,11 +8,21 @@ function App() {
   fullName: '',
   age: '',
   gender: '',
-  course: '',
+  course: '',   
   yearLevel: '',
   email: ''
   })
-  const [students, setStudents] = useState([])
+  const [students, setStudents] = useState(() => {
+  const savedStudents = localStorage.getItem('students')
+
+  return savedStudents ? JSON.parse(savedStudents) : []
+  })
+  useEffect(() => {
+  localStorage.setItem('students', JSON.stringify(students))
+  }, [students])
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [studentToDelete, setStudentToDelete] = useState(null)
+
   const handleSaveStudent = () => {
     if (
   !student.studentId ||
@@ -22,15 +32,13 @@ function App() {
   !student.course ||
   !student.yearLevel ||
   !student.email
-) {
-  alert('Please fill in all fields!')
-  return
-}
+  ) {
+    alert('Please fill in all fields!')
+    return
+  }
     const existingStudent = students.find(
-  (item) => item.studentId === student.studentId
+   (item) => item.studentId === student.studentId
   )
-
-
 
   if (existingStudent) {
   alert('Student ID already exists!')
@@ -53,6 +61,21 @@ function App() {
  }
 
  
+const handleDeleteStudent = (studentId) => {
+  setStudentToDelete(studentId)
+  setShowDeleteModal(true)
+}
+
+const confirmDeleteStudent = () => {
+  const updatedStudents = students.filter(
+    (item) => item.studentId !== studentToDelete
+  )
+
+  setStudents(updatedStudents)
+  setShowDeleteModal(false)
+  setStudentToDelete(null)
+}
+
 
   return (
     <div className="dashboard">
@@ -98,8 +121,6 @@ function App() {
       <h2>Overview</h2>
       <p>Here is your student information summary.</p>
 
-    <p>Here is your student information summary.</p>
-
 <div className="stats-container">
 
   <div className="stat-card">
@@ -122,9 +143,10 @@ function App() {
     <h1>110</h1>
   </div>
 
-</div>
+ </div>
 
-    </>
+ </>
+
   )}
     {currentPage === 'Students' && (
   <>
@@ -144,6 +166,7 @@ function App() {
             <th>Course</th>
             <th>Year Level</th>
             <th>Email</th>
+            <th>Action</th>
           </tr>
         </thead>
 
@@ -157,6 +180,13 @@ function App() {
               <td>{item.course}</td>
               <td>{item.yearLevel}</td>
               <td>{item.email}</td>
+              <td>
+              <button
+                onClick={() => handleDeleteStudent(item.studentId)}
+              >
+                 Delete
+              </button>
+             </td>
             </tr>
           ))}
         </tbody>
@@ -260,6 +290,33 @@ function App() {
 
 </div>
 </>
+)}
+
+{showDeleteModal && (
+  <div className="modal-overlay">
+    <div className="delete-modal">
+      <h2>Delete Student?</h2>
+
+      <p>
+        Are you sure you want to permanently delete this student record?
+      </p>
+
+      <div className="modal-buttons">
+        <button
+          onClick={() => {
+            setShowDeleteModal(false)
+            setStudentToDelete(null)
+          }}
+        >
+          Cancel
+        </button>
+
+        <button onClick={confirmDeleteStudent}>
+           Delete
+        </button>
+      </div>
+    </div>
+  </div>
 )}
 
 </section>
